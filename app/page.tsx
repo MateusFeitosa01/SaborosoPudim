@@ -1,5 +1,7 @@
+import Principal from "./Home/page";
+
 export default function Home() {
   return (
-    <h1>oi</h1>
+    <Principal/>
   );
 }
