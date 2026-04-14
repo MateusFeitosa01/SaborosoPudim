@@ -3,3 +3,36 @@
 
 # Force LF for JSON files, which are often shared across systems
 *.json text eol=lf
+
+# Force LF for YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Force LF for Markdown files
+*.md text eol=lf
+
+# Force LF for configuration files
+*.config.js text eol=lf
+*.config.ts text eol=lf
+*.config.mjs text eol=lf
+
+# Treat certain files as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+
+# TypeScript and JavaScript files
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+
+# CSS and styling files
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf

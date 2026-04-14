@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Leve Pudim - Sistema de E-commerce
 
-## Getting Started
+Um sistema completo de e-commerce para venda de pudins artesanais, desenvolvido com Next.js, TypeScript, Tailwind CSS e Supabase.
 
-First, run the development server:
+## 🚀 Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🛒 **Loja Online**: Catálogo de produtos com diferentes tamanhos e preços
+- 🛍️ **Carrinho de Compras**: Sistema completo de carrinho com persistência
+- 📋 **Checkout**: Processo de checkout com validação de dados
+- 👨‍💼 **Painel Admin**: Gerenciamento completo de produtos e pedidos
+- 🔐 **Autenticação**: Sistema de login para administradores
+- 📱 **Responsivo**: Design adaptável para desktop e mobile
+- 🎨 **UI Moderna**: Interface construída com shadcn/ui e Tailwind CSS
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **Animações**: Framer Motion
+- **Ícones**: Lucide React
+- **Deploy**: Vercel
+
+## 📋 Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+- Conta no Supabase
+
+## 🚀 Como executar
+
+1. **Clone o repositório**
+
+   ```bash
+   git clone <url-do-repositorio>
+   cd leve-pudim
+   ```
+
+2. **Instale as dependências**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure as variáveis de ambiente**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Preencha as variáveis no arquivo `.env.local`:
+
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Configure o banco de dados Supabase**
+   - Crie um novo projeto no [Supabase](https://supabase.com)
+   - Execute os scripts SQL para criar as tabelas necessárias
+   - Configure as políticas RLS (Row Level Security)
+
+5. **Execute o projeto**
+
+   ```bash
+   npm run dev
+   ```
+
+6. **Acesse no navegador**
+   ```
+   http://localhost:3000
+   ```
+
+## 📁 Estrutura do Projeto
+
+```
+├── app/                    # Páginas Next.js (App Router)
+│   ├── admin/             # Área administrativa
+│   ├── checkout/          # Página de checkout
+│   ├── confirmacao/       # Página de confirmação
+│   └── ...
+├── components/            # Componentes React
+│   ├── ui/               # Componentes de UI (shadcn)
+│   ├── admin/            # Componentes admin
+│   └── ...
+├── lib/                   # Utilitários e configurações
+│   ├── supabase/         # Configuração Supabase
+│   └── services/         # Serviços da API
+├── hooks/                 # Custom hooks
+└── public/               # Arquivos estáticos
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 Scripts Disponíveis
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run dev` - Inicia o servidor de desenvolvimento
+- `npm run build` - Build para produção
+- `npm run start` - Inicia o servidor de produção
+- `npm run lint` - Executa o linter
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📊 Banco de Dados
 
-## Learn More
+### Tabelas Principais
 
-To learn more about Next.js, take a look at the following resources:
+- **products**: Produtos disponíveis
+- **sizes**: Tamanhos e preços dos produtos
+- **orders**: Pedidos realizados
+- **order_items**: Itens dos pedidos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Configuração do Supabase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Crie as tabelas conforme o schema
+2. Configure as políticas RLS
+3. Configure o Storage para imagens dos produtos
 
-## Deploy on Vercel
+## 🚀 Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+O projeto está configurado para deploy no Vercel:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Conecte seu repositório no Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 📞 Suporte
+
+Para dúvidas ou suporte, entre em contato através das issues do GitHub.

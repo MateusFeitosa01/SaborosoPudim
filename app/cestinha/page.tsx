@@ -1,12 +1,21 @@
 "use client";
 
+import { useCart } from "@/components/contexts/cartContext";
 import Header from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
+import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
-import { useCart } from "@/components/contexts/cartContext";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+
+interface CartItem {
+  productId: string;
+  productName: string;
+  size: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart();
@@ -38,10 +47,7 @@ export default function Cart() {
       <Header />
 
       {/* 🔥 container animado */}
-      <motion.div
-        layout
-        className="container px-5 py-15 md:py-12 lg:px-115"
-      >
+      <motion.div layout className="container px-5 py-15 md:py-12 lg:px-115">
         <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
           Sua Cestinha
         </h1>
@@ -49,7 +55,7 @@ export default function Cart() {
         {/* LISTA */}
         <div className="mt-6 space-y-4">
           <AnimatePresence>
-            {items.map((item) => (
+            {items.map((item: CartItem) => (
               <motion.div
                 key={`${item.productId}-${item.size}`}
                 layout="position"
@@ -70,9 +76,7 @@ export default function Cart() {
                     <h3 className="font-display font-semibold text-foreground">
                       {item.productName}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.size}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{item.size}</p>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -84,7 +88,7 @@ export default function Cart() {
                             updateQuantity(
                               item.productId,
                               item.size,
-                              item.quantity - 1
+                              item.quantity - 1,
                             );
                           } else {
                             removeItem(item.productId, item.size);
@@ -104,7 +108,7 @@ export default function Cart() {
                           updateQuantity(
                             item.productId,
                             item.size,
-                            item.quantity + 1
+                            item.quantity + 1,
                           )
                         }
                         className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-secondary-foreground hover:bg-muted transition-colors"
@@ -120,9 +124,7 @@ export default function Cart() {
                       </span>
 
                       <button
-                        onClick={() =>
-                          removeItem(item.productId, item.size)
-                        }
+                        onClick={() => removeItem(item.productId, item.size)}
                         className="text-destructive hover:text-destructive/80 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -152,10 +154,7 @@ export default function Cart() {
 
           {/* BOTÕES */}
           <div className="flex flex-col gap-3">
-            <Button
-              onClick={() => router.push("/checkout")}
-              className="w-full"
-            >
+            <Button onClick={() => router.push("/checkout")} className="w-full">
               Finalizar Pedido
             </Button>
 
