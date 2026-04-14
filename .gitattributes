@@ -1,0 +1,5 @@
+# Normalize line endings for text files
+* text=auto
+
+# Force LF for JSON files, which are often shared across systems
+*.json text eol=lf

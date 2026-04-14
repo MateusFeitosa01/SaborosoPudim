@@ -12,10 +12,14 @@ export default function Header(){
 
     // anima quando quantidade muda
     useEffect(() => {
-        if (itemCount > 0) {
-        setBouncing(true)
-        const timer = setTimeout(() => setBouncing(false), 400)
-        return () => clearTimeout(timer)
+        if (itemCount <= 0) return
+
+        const startTimer = setTimeout(() => setBouncing(true), 0)
+        const stopTimer = setTimeout(() => setBouncing(false), 400)
+
+        return () => {
+            clearTimeout(startTimer)
+            clearTimeout(stopTimer)
         }
     }, [itemCount])
 

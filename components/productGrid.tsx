@@ -1,22 +1,61 @@
-import ProductCard from "./productCard";
-import { pudins } from "../data/products";
+"use client";
+
+import { useEffect, useState } from "react";
+import ProductCard, { Product } from "./productCard";
+import { getProducts } from "@/lib/services/products";
 
 export default function ProductsGrid() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getProducts();
+         console.log("PRODUTOS:", data);
+        setProducts(data || []);
+      } catch (error) {
+        console.error("Erro completo:", JSON.stringify(error, null, 2));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-10">
 
-        <h1 className="font-display text-3xl font-bold text-foreground md:text-3xl text-center">
-          Nossos Pudins
-        <p className="mt-2 text-center text-muted-foreground text-2xl">Escolha o seu favorito e adicione</p>
-        </h1><br/><br/>
+        <div className="text-center mb-12">
+          <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+            Nossos Pudins
+          </h1>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {pudins.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          <p className="mt-2 text-muted-foreground text-lg md:text-xl">
+            Escolha o seu favorito e adicione
+          </p>
         </div>
 
+        {loading ? (
+          <div className="text-center py-20 text-muted-foreground">
+            Carregando produtos...
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            Nenhum produto encontrado.
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

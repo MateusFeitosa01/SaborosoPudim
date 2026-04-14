@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function Confirmacao() {
   const { checkoutData, lastOrder } = useCart();
@@ -25,21 +26,52 @@ export default function Confirmacao() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-16">
+
+      {/* 🔥 ANIMAÇÃO DA PÁGINA */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="container mx-auto px-4 py-16"
+      >
         <div className="max-w-2xl mx-auto text-center">
+
+          {/* 🔥 BLOCO PRINCIPAL */}
           <div className="mb-8">
-            <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-4" />
+
+            {/* 🔥 ÍCONE ANIMADO */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 12,
+              }}
+            >
+              <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-4" />
+            </motion.div>
+
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Pedido Confirmado!
             </h1>
+
             <p className="text-xl text-muted-foreground">
               Obrigado por escolher o Saboroso Pudim! Entraremos em contato pelo WhatsApp para confirmar os detalhes.
             </p>
           </div>
 
+          {/* 🔥 RESUMO COM ANIMAÇÃO */}
           {lastOrder && (
-            <div className="bg-card p-8 rounded-lg shadow-sm mb-8">
-              <h2 className="text-2xl font-semibold mb-6">Resumo do pedido</h2>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-card p-8 rounded-lg shadow-sm mb-8"
+            >
+              <h2 className="text-2xl font-semibold mb-6">
+                Resumo do pedido
+              </h2>
 
               <div className="space-y-4 text-left">
                 {lastOrder.items.map((item) => (
@@ -64,10 +96,16 @@ export default function Confirmacao() {
                 <span>Total</span>
                 <span>R$ {lastOrder.total.toFixed(2)}</span>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          <div className="bg-blue-50 dark:bg-blue-950/20 p-6 rounded-lg mb-8">
+          {/* INFO WHATSAPP */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-blue-50 dark:bg-blue-950/20 p-6 rounded-lg mb-8"
+          >
             <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
               📱 Fique ligado no WhatsApp!
             </h3>
@@ -75,9 +113,15 @@ export default function Confirmacao() {
               Enviaremos atualizações sobre o status do seu pedido pelo WhatsApp.
               Qualquer dúvida, é só responder nossa mensagem!
             </p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
+          {/* AÇÕES */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-4"
+          >
             <p className="text-muted-foreground">
               Esperamos que você aproveite seus pudins! 🍮
             </p>
@@ -90,9 +134,10 @@ export default function Confirmacao() {
                 <Button>Fazer Novo Pedido</Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
+
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

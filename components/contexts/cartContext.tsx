@@ -8,117 +8,70 @@ import React, {
   useEffect,
 } from "react";
 
-/* ================= TYPES ================= */
-
-export interface CartItem {
-  productId: string;
-  productName: string;
-  size: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-interface CheckoutData {
-  name: string;
-  email: string;
-  whatsapp: string;
-  deliveryDate: Date;
-  deliveryMethod: "entrega" | "retirada";
-  address?: string;
-}
-
-interface Order {
-  items: CartItem[];
-  total: number;
-}
-
-interface CartContextType {
-  items: CartItem[];
-  checkoutData: CheckoutData | null;
-  lastOrder: Order | null;
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (productId: string, size: string) => void;
-  updateQuantity: (
-    productId: string,
-    size: string,
-    quantity: number
-  ) => void;
-  clearItems: () => void;
-  clearCart: () => void;
-  setCheckoutData: (data: CheckoutData) => void;
-  setLastOrder: (order: Order) => void;
-  total: number;
-  itemCount: number;
-}
-
 /* ================= CONTEXT ================= */
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const CartContext = createContext<any>(undefined);
 
 /* ================= PROVIDER ================= */
 
-export const CartProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [checkoutData, setCheckoutData] =
-    useState<CheckoutData | null>(null);
-  const [lastOrder, setLastOrder] =
-    useState<Order | null>(null);
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+  // 🔥 SEM localStorage no init (SSR-safe)
+  const [items, setItems] = useState<any[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
-  /* LOCAL STORAGE */
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [lastOrder, setLastOrder] = useState(null);
+
+  /* ================= HYDRATION ================= */
   useEffect(() => {
     const stored = localStorage.getItem("cart");
-    if (stored) setItems(JSON.parse(stored));
+
+    if (stored) {
+      setItems(JSON.parse(stored));
+    }
+
+    setHydrated(true);
   }, []);
 
+  /* ================= PERSIST ================= */
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
+    if (hydrated) {
+      localStorage.setItem("cart", JSON.stringify(items));
+    }
+  }, [items, hydrated]);
 
-  /* ADD */
-  const addItem = useCallback(
-    (item: Omit<CartItem, "quantity">) => {
-      setItems((prev) => {
-        const existing = prev.find(
-          (i) =>
-            i.productId === item.productId &&
-            i.size === item.size
+  /* ================= ACTIONS ================= */
+
+  const addItem = useCallback((item: any) => {
+    setItems((prev) => {
+      const existing = prev.find(
+        (i) => i.productId === item.productId && i.size === item.size
+      );
+
+      if (existing) {
+        return prev.map((i) =>
+          i.productId === item.productId && i.size === item.size
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
         );
+      }
 
-        if (existing) {
-          return prev.map((i) =>
-            i.productId === item.productId &&
-            i.size === item.size
-              ? { ...i, quantity: i.quantity + 1 }
-              : i
-          );
-        }
+      return [...prev, { ...item, quantity: 1 }];
+    });
+  }, []);
 
-        return [...prev, { ...item, quantity: 1 }];
-      });
-    },
-    []
-  );
-
-  /* REMOVE */
   const removeItem = useCallback((productId: string, size: string) => {
     setItems((prev) =>
-      prev.filter(
-        (i) =>
-          !(i.productId === productId && i.size === size)
-      )
+      prev.filter((i) => !(i.productId === productId && i.size === size))
     );
   }, []);
 
-  /* UPDATE */
   const updateQuantity = useCallback(
     (productId: string, size: string, quantity: number) => {
       if (quantity <= 0) {
-        removeItem(productId, size);
+        setItems((prev) =>
+          prev.filter((i) => !(i.productId === productId && i.size === size))
+        );
         return;
       }
 
@@ -130,20 +83,18 @@ export const CartProvider = ({
         )
       );
     },
-    [removeItem]
+    []
   );
 
-  /* CLEAR */
-  const clearItems = useCallback(() => {
-    setItems([]);
-  }, []);
+  const clearItems = useCallback(() => setItems([]), []);
 
   const clearCart = useCallback(() => {
     setItems([]);
     setCheckoutData(null);
   }, []);
 
-  /* DERIVED */
+  /* ================= DERIVED ================= */
+
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -180,7 +131,6 @@ export const CartProvider = ({
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context)
-    throw new Error("useCart must be used within CartProvider");
+  if (!context) throw new Error("useCart must be used within CartProvider");
   return context;
 };

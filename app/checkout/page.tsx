@@ -10,13 +10,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { createOrder, createOrderItems } from "@/lib/services/orders";
 
 export default function Checkout() {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(false);
 
-  const { items, total, setCheckoutData, checkoutData } = useCart();
+  const {
+    items,
+    total,
+    setCheckoutData,
+    checkoutData,
+    setLastOrder,
+    clearCart,
+  } = useCart();
 
   const router = useRouter();
+
   const [step, setStep] = useState<"dados" | "pagamento">("dados");
 
   const [formData, setFormData] = useState({
@@ -30,24 +41,23 @@ export default function Checkout() {
     address: checkoutData?.address || "",
   });
 
-  // mínimo de 2 dias
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 2);
 
-  const handleContinue = () => {
+  function handleContinue() {
     const newErrors = {
-      name: !formData.name,
-      email: !formData.email,
-      whatsapp: !formData.whatsapp,
+      name: !formData.name.trim(),
+      email: !formData.email.trim(),
+      whatsapp: !formData.whatsapp.trim(),
       deliveryDate: !formData.deliveryDate,
       address:
-        formData.deliveryMethod === "entrega" && !formData.address,
+        formData.deliveryMethod === "entrega" &&
+        !formData.address.trim(),
     };
 
     setErrors(newErrors);
 
-    const hasError = Object.values(newErrors).some(Boolean);
-    if (hasError) return;
+    if (Object.values(newErrors).some(Boolean)) return;
 
     setCheckoutData({
       name: formData.name,
@@ -62,206 +72,255 @@ export default function Checkout() {
     });
 
     setStep("pagamento");
-  };
+  }
 
-  if (items.length === 0) return null;
+ async function handleFinishOrder() {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      const order = await createOrder({
+        name: formData.name,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        delivery_method: formData.deliveryMethod,
+        delivery_date: formData.deliveryDate,
+        address:
+          formData.deliveryMethod === "entrega"
+            ? formData.address
+            : null,
+        total,
+        status: "pending",
+      });
+
+      await createOrderItems(
+        order.id,
+        items.map((item) => ({
+          productId: item.productId,
+          size: item.size,
+          quantity: item.quantity,
+          price: item.price,
+        }))
+      );
+
+      setLastOrder({
+        id: order.id,
+        total,
+        items,
+      });
+
+      clearCart();
+
+      router.push("/confirmacao");
+    } catch (error) {
+  console.error("ERRO COMPLETO:");
+  console.dir(error);
+
+  alert(
+    JSON.stringify(error, null, 2)
+  );
+}
+     finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
       <div className="container px-5 py-15 md:py-12 lg:px-115">
+        <AnimatePresence mode="wait">
+          {step === "dados" && (
+            <motion.div
+              key="dados"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <h1 className="font-display text-2xl font-bold md:text-3xl">
+                Finalizar Pedido
+              </h1>
 
-        {step === "dados" && (
-          <div className="space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Preencha seus dados para continuar
+              </p>
 
-            <h1 className="font-display text-2xl font-bold text-foreground mb-0 md:text-3xl">Finalizar Pedido</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Preencha seus dados para continuar</p>
-
-            <div className="bg-card p-6 rounded-xl border border-border space-y-4">
-
-              {/* NOME */}
-              <div className="space-y-1">
-                <Label>Nome</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  aria-invalid={errors.name}
-                  className="aria-invalid:border-red-500"
-                />
-              </div>
-
-              {/* EMAIL */}
-              <div className="space-y-1">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  aria-invalid={errors.email}
-                  className="aria-invalid:border-red-500"
-                />
-              </div>
-
-              {/* WHATSAPP */}
-              <div className="space-y-1">
-                <Label className="flex items-center gap-2">
-                  <Phone size={16} /> WhatsApp
-                </Label>
-                <Input
-                  value={formData.whatsapp}
-                  onChange={(e) =>
-                    setFormData({ ...formData, whatsapp: e.target.value })
-                  }
-                  aria-invalid={errors.whatsapp}
-                  className="aria-invalid:border-red-500"
-                />
-              </div>
-
-              {/* DATA */}
-              <div className="space-y-1">
-                <Label className="flex items-center gap-2">
-                  <Calendar size={16} /> Data de Entrega
-                </Label>
-                <Input
-                  type="date"
-                  min={minDate.toISOString().split("T")[0]}
-                  value={formData.deliveryDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, deliveryDate: e.target.value })
-                  }
-                  aria-invalid={errors.deliveryDate}
-                  className="aria-invalid:border-red-500"
-                />
-              </div>
-
-              {/* MÉTODO ESTILIZADO */}
-              <div className="space-y-2">
-                <Label>Método de recebimento</Label>
-
-                <div className="flex gap-3">
-                  {(["retirada", "entrega"] as const).map((method) => (
-                    <label
-                      key={method}
-                      className={cn(
-                        "flex-1 cursor-pointer rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
-                        formData.deliveryMethod === method
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border text-muted-foreground hover:border-primary/50"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        value={method}
-                        checked={formData.deliveryMethod === method}
-                        onChange={() =>
-                          setFormData({
-                            ...formData,
-                            deliveryMethod: method,
-                          })
-                        }
-                        className="sr-only"
-                      />
-
-                      {method === "retirada"
-                        ? "🏠 Retirada"
-                        : "🚗 Entrega"}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* ENDEREÇO */}
-              {formData.deliveryMethod === "entrega" && (
-                <div className="space-y-1">
-                  <Label className="flex items-center gap-2">
-                    <MapPin size={16} /> Endereço
-                  </Label>
-                  <Textarea
-                    value={formData.address}
+              <div className="bg-card p-6 rounded-xl border space-y-4">
+                <div>
+                  <Label>Nome</Label>
+                  <Input
+                    value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
+                      setFormData({ ...formData, name: e.target.value })
                     }
-                    aria-invalid={errors.address}
-                    className="aria-invalid:border-red-500"
+                    aria-invalid={errors.name}
                   />
                 </div>
-              )}
 
-              <Button onClick={handleContinue} className="w-full">
-                Prosseguir para pagamento
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* ETAPA 2 */}
-        {step === "pagamento" && (
-          <div className="space-y-6">
-
-            <h1 className="text-2xl font-bold">Pagamento</h1>
-
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="font-semibold mb-4">Resumo do Pedido</h2>
-
-              {items.map((item) => (
-                <div
-                  key={`${item.productId}-${item.size}`}
-                  className="flex justify-between text-sm mb-2"
-                >
-                  <span>
-                    {item.productName} x {item.quantity}
-                  </span>
-                  <span>
-                    R$ {(item.price * item.quantity).toFixed(2)}
-                  </span>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    aria-invalid={errors.email}
+                  />
                 </div>
-              ))}
 
-              <div className="border-t mt-4 pt-4 font-bold flex justify-between">
-                <span>Total</span>
-                <span>R$ {total.toFixed(2)}</span>
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Phone size={16} /> WhatsApp
+                  </Label>
+                  <Input
+                    value={formData.whatsapp}
+                    onChange={(e) =>
+                      setFormData({ ...formData, whatsapp: e.target.value })
+                    }
+                    aria-invalid={errors.whatsapp}
+                  />
+                </div>
+
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Calendar size={16} /> Data de Entrega
+                  </Label>
+                  <Input
+                    type="date"
+                    min={minDate.toISOString().split("T")[0]}
+                    value={formData.deliveryDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        deliveryDate: e.target.value,
+                      })
+                    }
+                    aria-invalid={errors.deliveryDate}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Método de recebimento</Label>
+
+                  <div className="flex gap-3">
+                    {(["retirada", "entrega"] as const).map((method) => (
+                      <label
+                        key={method}
+                        className={cn(
+                          "flex-1 cursor-pointer rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
+                          formData.deliveryMethod === method
+                            ? "border-primary bg-primary/10"
+                            : "border-border"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          className="sr-only"
+                          checked={formData.deliveryMethod === method}
+                          onChange={() =>
+                            setFormData({
+                              ...formData,
+                              deliveryMethod: method,
+                            })
+                          }
+                        />
+                        {method === "retirada"
+                          ? "🏠 Retirada"
+                          : "🚗 Entrega"}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {formData.deliveryMethod === "entrega" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <Label className="flex items-center gap-2">
+                        <MapPin size={16} /> Endereço
+                      </Label>
+
+                      <Textarea
+                        value={formData.address}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            address: e.target.value,
+                          })
+                        }
+                        aria-invalid={errors.address}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <Button onClick={handleContinue} className="w-full">
+                  Prosseguir para pagamento
+                </Button>
               </div>
-            </div>
+            </motion.div>
+          )}
 
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="font-semibold mb-2">Dados do Pedido</h2>
-              <p><strong>Nome: </strong>{formData.name}</p>
-              <p><strong>Email: </strong>{formData.email}</p>
-              <p><strong>Whatsapp: </strong>{formData.whatsapp}</p>
-              <p><strong>Recebimento: </strong>{formData.deliveryMethod}</p>
-              <p>
-                <strong>Data: </strong>
-                {formData.deliveryDate
-                    ? formData.deliveryDate.split("-").reverse().join("/")
-                    : ""}
-            </p>
-            </div>
-
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="font-semibold">Integração com gateway</h2>
-            </div>
-
-            <Button
-              onClick={() => router.push("/confirmacao")}
-              className="w-full"
+          {step === "pagamento" && (
+            <motion.div
+              key="pagamento"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              className="space-y-6"
             >
-              Finalizar Pedido
-            </Button>
+              <h1 className="text-2xl font-bold">Pagamento</h1>
 
-            <Button
-              variant="outline"
-              onClick={() => setStep("dados")}
-              className="w-full"
-            >
-              Voltar
-            </Button>
-          </div>
-        )}
+              <div className="bg-card p-6 rounded-xl border">
+                <h2 className="font-semibold mb-4">Resumo do Pedido</h2>
+
+                {items.map((item, index) => (
+                  <div
+                    key={`${item.productId}-${item.size}-${index}`}
+                    className="flex justify-between mb-2 text-sm"
+                  >
+                    <span>
+                      {item.productName} x {item.quantity}
+                    </span>
+                    <span>
+                      R$ {(item.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+
+                <div className="border-t mt-4 pt-4 flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>R$ {total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleFinishOrder}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Finalizando..." : "Finalizar Pedido"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setStep("dados")}
+                className="w-full"
+              >
+                Voltar
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
