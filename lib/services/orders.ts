@@ -1,5 +1,18 @@
 import { supabase } from "@/lib/supabase";
 
+/* ================= STATUS PADRÃO ================= */
+
+export const STATUS_FLOW = [
+  "pendente",
+  "preparando",
+  "pronto",
+  "entregue",
+] as const;
+
+export type OrderStatus = (typeof STATUS_FLOW)[number];
+
+/* ================= TYPES ================= */
+
 interface CreateOrderInput {
   name: string;
   email: string;
@@ -8,15 +21,20 @@ interface CreateOrderInput {
   delivery_method: "entrega" | "retirada";
   address?: string | null;
   total: number;
-  status?: string;
+  status?: OrderStatus;
 }
 
+/* ================= CREATE ORDER ================= */
+
 export async function createOrder(
-  orderData: CreateOrderInput
+  orderData: CreateOrderInput,
 ): Promise<{ id: string }> {
   const { data, error } = await supabase
     .from("orders")
-    .insert(orderData)
+    .insert({
+      ...orderData,
+      status: orderData.status ?? "pendente",
+    })
     .select("id")
     .single();
 
@@ -25,6 +43,8 @@ export async function createOrder(
   return data;
 }
 
+/* ================= CREATE ORDER ITEMS ================= */
+
 export async function createOrderItems(
   orderId: string,
   items: {
@@ -32,7 +52,7 @@ export async function createOrderItems(
     size: string;
     quantity: number;
     price: number;
-  }[]
+  }[],
 ) {
   const payload = items.map((item) => ({
     order_id: orderId,
@@ -42,17 +62,18 @@ export async function createOrderItems(
     price: item.price,
   }));
 
-  const { error } = await supabase
-    .from("order_items")
-    .insert(payload);
+  const { error } = await supabase.from("order_items").insert(payload);
 
   if (error) throw error;
 }
 
+/* ================= GET ORDERS ================= */
+
 export async function getOrders() {
   const { data, error } = await supabase
     .from("orders")
-    .select(`
+    .select(
+      `
       id,
       name,
       email,
@@ -69,10 +90,25 @@ export async function getOrders() {
         size,
         products(name)
       )
-    `)
+    `,
+    )
     .order("created_at", { ascending: false });
 
   if (error) throw error;
 
   return data ?? [];
+}
+
+/* ================= UPDATE STATUS ================= */
+
+export async function updateOrderStatus(
+  orderId: string,
+  newStatus: OrderStatus,
+) {
+  const { error } = await supabase
+    .from("orders")
+    .update({ status: newStatus })
+    .eq("id", orderId);
+
+  if (error) throw error;
 }

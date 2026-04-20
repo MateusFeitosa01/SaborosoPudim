@@ -8,35 +8,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 
-export function OrdersTable({
+export function OrdersByStatusTable({
   orders,
+  status,
+  title,
   onChangeStatus,
 }: {
   orders: any[];
+  status: string;
+  title: string;
   onChangeStatus: (order: any, dir: "next" | "prev") => void;
 }) {
-  function getBadgeVariant(status: string) {
-    switch (status) {
-      case "pendente":
-        return "secondary";
-      case "preparando":
-        return "default";
-      case "pronto":
-        return "outline";
-      case "entregue":
-        return "default";
-      default:
-        return "secondary";
-    }
-  }
+  const filtered = orders.filter((o) => o.status === status);
 
-  if (!orders.length) return <div>Nenhum pedido encontrado.</div>;
+  if (!filtered.length) return null;
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Todos os Pedidos</h2>
+      <h2 className="text-xl font-bold mb-3">{title}</h2>
 
       <Table>
         <TableHeader>
@@ -44,36 +34,26 @@ export function OrdersTable({
             <TableHead>ID</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Data</TableHead>
-            <TableHead>Método</TableHead>
             <TableHead>Endereço</TableHead>
             <TableHead>Total</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead>Ações</TableHead>
-            <TableHead>Itens</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {orders.map((order) => (
+          {filtered.map((order) => (
             <TableRow key={order.id}>
               <TableCell>{order.id.slice(0, 8)}</TableCell>
+
               <TableCell>{order.name}</TableCell>
 
               <TableCell>
                 {new Date(order.delivery_date).toLocaleDateString("pt-BR")}
               </TableCell>
 
-              <TableCell>{order.delivery_method}</TableCell>
-
               <TableCell>{order.address || "Não informado"}</TableCell>
 
               <TableCell>R$ {Number(order.total).toFixed(2)}</TableCell>
-
-              <TableCell>
-                <Badge variant={getBadgeVariant(order.status)}>
-                  {order.status}
-                </Badge>
-              </TableCell>
 
               <TableCell className="flex gap-2">
                 <button
@@ -89,18 +69,6 @@ export function OrdersTable({
                 >
                   ➡️
                 </button>
-              </TableCell>
-
-              <TableCell>
-                {order.order_items?.length
-                  ? order.order_items.map((item: any, index: number) => (
-                      <div key={index}>
-                        {item.quantity}x{" "}
-                        {item.products?.name ?? "Produto removido"} ({item.size}
-                        )
-                      </div>
-                    ))
-                  : "Sem itens"}
               </TableCell>
             </TableRow>
           ))}

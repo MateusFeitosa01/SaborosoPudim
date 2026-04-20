@@ -51,8 +51,7 @@ export default function Checkout() {
       whatsapp: !formData.whatsapp.trim(),
       deliveryDate: !formData.deliveryDate,
       address:
-        formData.deliveryMethod === "entrega" &&
-        !formData.address.trim(),
+        formData.deliveryMethod === "entrega" && !formData.address.trim(),
     };
 
     setErrors(newErrors);
@@ -66,15 +65,13 @@ export default function Checkout() {
       deliveryDate: new Date(formData.deliveryDate),
       deliveryMethod: formData.deliveryMethod as "entrega" | "retirada",
       address:
-        formData.deliveryMethod === "entrega"
-          ? formData.address
-          : undefined,
+        formData.deliveryMethod === "entrega" ? formData.address : undefined,
     });
 
     setStep("pagamento");
   }
 
- async function handleFinishOrder() {
+  async function handleFinishOrder() {
     if (loading) return;
 
     try {
@@ -87,9 +84,7 @@ export default function Checkout() {
         delivery_method: formData.deliveryMethod,
         delivery_date: formData.deliveryDate,
         address:
-          formData.deliveryMethod === "entrega"
-            ? formData.address
-            : null,
+          formData.deliveryMethod === "entrega" ? formData.address : null,
         total,
         status: "pending",
       });
@@ -101,7 +96,7 @@ export default function Checkout() {
           size: item.size,
           quantity: item.quantity,
           price: item.price,
-        }))
+        })),
       );
 
       setLastOrder({
@@ -114,14 +109,11 @@ export default function Checkout() {
 
       router.push("/confirmacao");
     } catch (error) {
-  console.error("ERRO COMPLETO:");
-  console.dir(error);
+      console.error("ERRO COMPLETO:");
+      console.dir(error);
 
-  alert(
-    JSON.stringify(error, null, 2)
-  );
-}
-     finally {
+      alert(JSON.stringify(error, null, 2));
+    } finally {
       setLoading(false);
     }
   }
@@ -215,7 +207,7 @@ export default function Checkout() {
                           "flex-1 cursor-pointer rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
                           formData.deliveryMethod === method
                             ? "border-primary bg-primary/10"
-                            : "border-border"
+                            : "border-border",
                         )}
                       >
                         <input
@@ -229,9 +221,7 @@ export default function Checkout() {
                             })
                           }
                         />
-                        {method === "retirada"
-                          ? "🏠 Retirada"
-                          : "🚗 Entrega"}
+                        {method === "retirada" ? "🏠 Retirada" : "🚗 Entrega"}
                       </label>
                     ))}
                   </div>
@@ -291,9 +281,7 @@ export default function Checkout() {
                     <span>
                       {item.productName} x {item.quantity}
                     </span>
-                    <span>
-                      R$ {(item.price * item.quantity).toFixed(2)}
-                    </span>
+                    <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
 

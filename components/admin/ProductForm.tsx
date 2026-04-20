@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { createProduct, updateProduct, getProducts, Product } from "@/lib/services/products";
+import { createProduct, updateProduct, Product } from "@/lib/services/products";
+import { uploadProductImage } from "@/lib/services/storage";
 
 interface ProductFormProps {
   product?: Product;
@@ -15,22 +16,34 @@ interface ProductFormProps {
 
 export function ProductForm({ product, isEdit = false }: ProductFormProps) {
   const router = useRouter();
+
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [image, setImage] = useState(product?.image || "");
-  const [sizes, setSizes] = useState(product?.sizes || [{ label: "", price: 0 }]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [sizes, setSizes] = useState(
+    product?.sizes || [{ label: "", price: 0 }],
+  );
+
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let imageUrl = image;
+
+      if (imageFile) {
+        imageUrl = await uploadProductImage(imageFile);
+      }
+
       const productData = {
         name,
         description,
-        image,
-        sizes: sizes.filter(s => s.label && s.price > 0),
+        image: imageUrl,
+        sizes: sizes.filter((s) => s.label.trim() && s.price > 0),
       };
 
       if (isEdit && product) {
@@ -42,25 +55,33 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
       router.push("/admin/produtos");
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
-      alert("Erro ao salvar produto");
+      alert("Erro ao salvar produto.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const addSize = () => {
+  function addSize() {
     setSizes([...sizes, { label: "", price: 0 }]);
-  };
+  }
 
-  const updateSize = (index: number, field: 'label' | 'price', value: string | number) => {
+  function updateSize(
+    index: number,
+    field: "label" | "price",
+    value: string | number,
+  ) {
     const newSizes = [...sizes];
-    newSizes[index] = { ...newSizes[index], [field]: value };
-    setSizes(newSizes);
-  };
+    newSizes[index] = {
+      ...newSizes[index],
+      [field]: value,
+    };
 
-  const removeSize = (index: number) => {
+    setSizes(newSizes);
+  }
+
+  function removeSize(index: number) {
     setSizes(sizes.filter((_, i) => i !== index));
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
@@ -85,44 +106,67 @@ export function ProductForm({ product, isEdit = false }: ProductFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="image">URL da Imagem</Label>
+        <Label htmlFor="image">Imagem do Produto</Label>
         <Input
           id="image"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          required
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+          required={!isEdit}
         />
       </div>
 
+      {image && !imageFile && (
+        <img
+          src={image}
+          alt="Preview"
+          className="w-32 h-32 object-cover rounded"
+        />
+      )}
+
       <div>
         <Label>Tamanhos e Preços</Label>
+
         {sizes.map((size, index) => (
           <div key={index} className="flex gap-2 mb-2">
             <Input
-              placeholder="Tamanho (ex: Individual)"
+              placeholder="Tamanho"
               value={size.label}
-              onChange={(e) => updateSize(index, 'label', e.target.value)}
+              onChange={(e) => updateSize(index, "label", e.target.value)}
               required
             />
+
             <Input
               type="number"
               placeholder="Preço"
               value={size.price}
-              onChange={(e) => updateSize(index, 'price', parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                updateSize(index, "price", parseFloat(e.target.value) || 0)
+              }
               required
             />
-            <Button type="button" variant="outline" onClick={() => removeSize(index)}>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => removeSize(index)}
+            >
               Remover
             </Button>
           </div>
         ))}
+
         <Button type="button" variant="outline" onClick={addSize}>
           Adicionar Tamanho
         </Button>
       </div>
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Salvando..." : isEdit ? "Atualizar Produto" : "Criar Produto"}
+        {loading
+          ? "Salvando..."
+          : isEdit
+            ? "Atualizar Produto"
+            : "Criar Produto"}
       </Button>
     </form>
   );
