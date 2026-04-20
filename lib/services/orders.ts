@@ -92,7 +92,7 @@ export async function getOrders() {
       )
     `,
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
 

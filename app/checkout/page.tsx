@@ -86,7 +86,7 @@ export default function Checkout() {
         address:
           formData.deliveryMethod === "entrega" ? formData.address : null,
         total,
-        status: "pending",
+        status: "pendente",
       });
 
       await createOrderItems(

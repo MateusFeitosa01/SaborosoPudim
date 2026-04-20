@@ -19,15 +19,12 @@ export default function Confirmacao() {
     }
   }, [checkoutData, lastOrder, router]);
 
-  if (!checkoutData && !lastOrder) {
-    return null;
-  }
+  if (!lastOrder) return null;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* 🔥 ANIMAÇÃO DA PÁGINA */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,11 +32,8 @@ export default function Confirmacao() {
         className="container mx-auto px-4 py-16"
       >
         <div className="max-w-2xl mx-auto text-center">
-
-          {/* 🔥 BLOCO PRINCIPAL */}
+          {/* 🔥 HEADER */}
           <div className="mb-8">
-
-            {/* 🔥 ÍCONE ANIMADO */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -52,90 +46,64 @@ export default function Confirmacao() {
               <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-4" />
             </motion.div>
 
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              Pedido Confirmado!
-            </h1>
+            <h1 className="text-4xl font-bold mb-4">Pedido Confirmado!</h1>
 
-            <p className="text-xl text-muted-foreground">
-              Obrigado por escolher o Saboroso Pudim! Entraremos em contato pelo WhatsApp para confirmar os detalhes.
+            {/* 🔥 ID DO PEDIDO */}
+            <p className="text-lg font-semibold text-primary mb-2">
+              Pedido Nº #{lastOrder.id?.slice(0, 8).toUpperCase()}
+            </p>
+
+            <p className="text-muted-foreground">
+              Obrigado por escolher o Saboroso Pudim! Entraremos em contato pelo
+              WhatsApp.
             </p>
           </div>
 
-          {/* 🔥 RESUMO COM ANIMAÇÃO */}
-          {lastOrder && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-card p-8 rounded-lg shadow-sm mb-8"
-            >
-              <h2 className="text-2xl font-semibold mb-6">
-                Resumo do pedido
-              </h2>
+          {/* 🔥 RESUMO */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-card p-6 rounded-lg shadow-sm mb-8 text-left"
+          >
+            <h2 className="text-xl font-semibold mb-4">Resumo do pedido</h2>
 
-              <div className="space-y-4 text-left">
-                {lastOrder.items.map((item) => (
-                  <div
-                    key={`${item.productId}-${item.size}`}
-                    className="flex justify-between gap-4"
-                  >
-                    <div>
-                      <p className="font-medium">{item.productName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {item.size} x {item.quantity}
-                      </p>
-                    </div>
-                    <p className="font-semibold">
-                      R$ {(item.price * item.quantity).toFixed(2)}
+            <div className="space-y-3">
+              {lastOrder.items.map((item: any, index: number) => (
+                <div key={index} className="flex justify-between">
+                  <div>
+                    <p>{item.productName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.size} x {item.quantity}
                     </p>
                   </div>
-                ))}
-              </div>
 
-              <div className="border-t pt-4 mt-4 flex justify-between text-lg font-semibold">
-                <span>Total</span>
-                <span>R$ {lastOrder.total.toFixed(2)}</span>
-              </div>
-            </motion.div>
-          )}
+                  <p>R$ {(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
 
-          {/* INFO WHATSAPP */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-blue-50 dark:bg-blue-950/20 p-6 rounded-lg mb-8"
-          >
-            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              📱 Fique ligado no WhatsApp!
-            </h3>
-            <p className="text-blue-800 dark:text-blue-200">
-              Enviaremos atualizações sobre o status do seu pedido pelo WhatsApp.
-              Qualquer dúvida, é só responder nossa mensagem!
-            </p>
-          </motion.div>
-
-          {/* AÇÕES */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-4"
-          >
-            <p className="text-muted-foreground">
-              Esperamos que você aproveite seus pudins! 🍮
-            </p>
-
-            <div className="flex gap-4 justify-center">
-              <Link href="/">
-                <Button variant="outline">Voltar ao Início</Button>
-              </Link>
-              <Link href="/cestinha">
-                <Button>Fazer Novo Pedido</Button>
-              </Link>
+            <div className="border-t mt-4 pt-4 flex justify-between font-semibold">
+              <span>Total</span>
+              <span>R$ {lastOrder.total.toFixed(2)}</span>
             </div>
           </motion.div>
 
+          {/* 🔥 WHATSAPP */}
+          <div className="bg-blue-50 p-4 rounded mb-6">
+            <p>📱 Fique ligado no WhatsApp! Vamos te atualizar por lá.</p>
+          </div>
+
+          {/* 🔥 BOTÕES */}
+          <div className="flex gap-4 justify-center">
+            <Link href="/">
+              <Button variant="outline">Voltar</Button>
+            </Link>
+
+            <Link href="/cestinha">
+              <Button>Novo Pedido</Button>
+            </Link>
+          </div>
         </div>
       </motion.div>
     </div>
