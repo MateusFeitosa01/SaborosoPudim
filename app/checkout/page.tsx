@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { createOrder, createOrderItems } from "@/lib/services/orders";
+import Image from "next/image";
 
 export default function Checkout() {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
@@ -42,7 +43,15 @@ export default function Checkout() {
   });
 
   const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 2);
+  minDate.setDate(minDate.getDate() + 3);
+
+  const pixCode =
+    "00020101021126580014br.gov.bcb.pix01362d2fc313-ecfc-4a9c-9848-12257ab40d125204000053039865802BR5920MATEUS M Y M FEITOSA6011JOAO PESSOA62070503***6304AB02";
+
+  function handleCopyPix() {
+    navigator.clipboard.writeText(pixCode);
+    alert("Código PIX copiado!");
+  }
 
   function handleContinue() {
     const newErrors = {
@@ -289,6 +298,31 @@ export default function Checkout() {
                   <span>Total</span>
                   <span>R$ {total.toFixed(2)}</span>
                 </div>
+              </div>
+
+              {/* PIX ADICIONADO SEM ALTERAR LAYOUT */}
+              <div className="bg-card p-6 rounded-xl border text-center space-y-4">
+                <h2 className="font-semibold">Pagamento via PIX</h2>
+
+                <Image
+                  src="/pix.png"
+                  alt="QR Code PIX"
+                  width={200}
+                  height={200}
+                  className="mx-auto"
+                />
+
+                <p className="text-sm text-muted-foreground">
+                  Escaneie ou copie o código abaixo:
+                </p>
+
+                <div className="bg-muted p-3 rounded text-xs break-all">
+                  {pixCode}
+                </div>
+
+                <Button onClick={handleCopyPix} className="w-full">
+                  Copiar código PIX
+                </Button>
               </div>
 
               <Button

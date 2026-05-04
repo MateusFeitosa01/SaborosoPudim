@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function AdminLoginForm() {
   const supabase = createClient();
@@ -31,13 +31,19 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4 max-w-sm mx-auto mt-20">
+    <form
+      onSubmit={handleLogin}
+      className="space-y-4 max-w-sm w-full mx-auto mt-10 sm:mt-20 px-4"
+    >
+      <div className="text-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Admin Login</h1>
+      </div>
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded-md border px-3 py-2"
+        className="w-full rounded-md border px-3 py-2 text-base"
         required
       />
       <input
@@ -45,12 +51,12 @@ export function AdminLoginForm() {
         placeholder="Senha"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded-md border px-3 py-2"
+        className="w-full rounded-md border px-3 py-2 text-base"
         required
       />
       <button
         type="submit"
-        className="inline-flex w-full justify-center rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90"
+        className="inline-flex w-full justify-center rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90 font-semibold text-base"
         disabled={loading}
       >
         {loading ? "Entrando..." : "Entrar"}

@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 export default function Hero() {
   return (
     <section className="relative overflow-hidden px-4 lg:px-[200px]">
-      
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <Image
@@ -23,7 +22,6 @@ export default function Hero() {
       {/* Conteúdo */}
       <div className="relative py-20 md:py-32">
         <div className="max-w-lg">
-
           {/* TÍTULO */}
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
@@ -41,7 +39,8 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-4 text-lg text-white/80 font-body"
           >
-            Sabor caseiro com apresentação profissional. Encomende agora e receba no conforto da sua casa.
+            Sabor caseiro com apresentação profissional. Encomende agora e
+            receba no conforto da sua casa.
           </motion.p>
 
           {/* BOTÃO */}
@@ -59,7 +58,6 @@ export default function Hero() {
           >
             Ver Cardápio
           </motion.button>
-
         </div>
       </div>
     </section>

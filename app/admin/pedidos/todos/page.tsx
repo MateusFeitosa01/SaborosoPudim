@@ -1,6 +1,6 @@
 "use client";
 
-import { OrdersByStatusTable } from "@/components/admin/OrdersByStatusTable";
+import { OrdersTable } from "@/components/admin/OrdersTable";
 import { Button } from "@/components/ui/button";
 import {
   getOrders,
@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function PedidosPage() {
+export default function TodosPedidosPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,52 +53,21 @@ export default function PedidosPage() {
     );
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6">
+    <div className="w-full space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Pedidos por Status</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Todos os Pedidos</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Organize seus pedidos por etapa
+            Visualize todos os pedidos em uma tabela
           </p>
         </div>
-        <Link href="/admin/pedidos/todos">
-          <Button>Ver Todos</Button>
+        <Link href="/admin/pedidos">
+          <Button variant="outline">Ver por Status</Button>
         </Link>
       </div>
 
       <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="pendente"
-          title="Pedidos Pendentes"
-          onChangeStatus={changeStatus}
-        />
-      </div>
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="preparando"
-          title="Pedidos em Preparo"
-          onChangeStatus={changeStatus}
-        />
-      </div>
-
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="pronto"
-          title="Prontos para Entrega"
-          onChangeStatus={changeStatus}
-        />
-      </div>
-
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="entregue"
-          title="Pedidos Entregues"
-          onChangeStatus={changeStatus}
-        />
+        <OrdersTable orders={orders} onChangeStatus={changeStatus} />
       </div>
     </div>
   );

@@ -1,11 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
+import { NavMain } from "@/components/nav-main";
 
-import { NavMain } from "@/components/nav-main"
-
-import { NavUser } from "@/components/nav-user"
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -14,8 +13,21 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon, ChefHat  } from "lucide-react"
+} from "@/components/ui/sidebar";
+import {
+  CameraIcon,
+  ChartBarIcon,
+  ChefHat,
+  CircleHelpIcon,
+  DatabaseIcon,
+  FileChartColumnIcon,
+  FileIcon,
+  FileTextIcon,
+  LayoutDashboardIcon,
+  ListIcon,
+  SearchIcon,
+  Settings2Icon,
+} from "lucide-react";
 
 const data = {
   user: {
@@ -27,36 +39,33 @@ const data = {
     {
       title: "Dashboard",
       url: "/admin",
-      icon: (
-        <LayoutDashboardIcon
-        />
-      ),
+      icon: <LayoutDashboardIcon />,
     },
     {
       title: "Pedidos",
       url: "/admin/pedidos",
-      icon: (
-        <ListIcon
-        />
-      ),
+      icon: <ListIcon />,
+      items: [
+        {
+          title: "Por Status",
+          url: "/admin/pedidos",
+        },
+        {
+          title: "Todos",
+          url: "/admin/pedidos/todos",
+        },
+      ],
     },
     {
       title: "Produtos",
       url: "/admin/produtos",
-      icon: (
-        <ChartBarIcon
-        />
-      ),
+      icon: <ChartBarIcon />,
     },
-
   ],
   navClouds: [
     {
       title: "Capture",
-      icon: (
-        <CameraIcon
-        />
-      ),
+      icon: <CameraIcon />,
       isActive: true,
       url: "#",
       items: [
@@ -72,10 +81,7 @@ const data = {
     },
     {
       title: "Proposal",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
         {
@@ -90,10 +96,7 @@ const data = {
     },
     {
       title: "Prompts",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
         {
@@ -111,55 +114,37 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
+      icon: <Settings2Icon />,
     },
     {
       title: "Get Help",
       url: "#",
-      icon: (
-        <CircleHelpIcon
-        />
-      ),
+      icon: <CircleHelpIcon />,
     },
     {
       title: "Search",
       url: "#",
-      icon: (
-        <SearchIcon
-        />
-      ),
+      icon: <SearchIcon />,
     },
   ],
   documents: [
     {
       name: "Data Library",
       url: "#",
-      icon: (
-        <DatabaseIcon
-        />
-      ),
+      icon: <DatabaseIcon />,
     },
     {
       name: "Reports",
       url: "#",
-      icon: (
-        <FileChartColumnIcon
-        />
-      ),
+      icon: <FileChartColumnIcon />,
     },
     {
       name: "Word Assistant",
       url: "#",
-      icon: (
-        <FileIcon
-        />
-      ),
+      icon: <FileIcon />,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -186,5 +171,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
