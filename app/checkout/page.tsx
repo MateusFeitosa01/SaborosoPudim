@@ -2,17 +2,17 @@
 
 import Header from "@/components/Header";
 import { useCart } from "@/components/contexts/cartContext";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 import { createOrder, createOrderItems } from "@/lib/services/orders";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { Calendar, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Checkout() {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
@@ -100,7 +100,7 @@ export default function Checkout() {
 
       await createOrderItems(
         order.id,
-        items.map((item) => ({
+        items.map((item: any) => ({
           productId: item.productId,
           size: item.size,
           quantity: item.quantity,

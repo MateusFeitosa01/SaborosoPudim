@@ -1,6 +1,6 @@
 import { ProductForm } from "@/components/admin/ProductForm";
 import { getProducts } from "@/lib/services/products";
-
+import { SiteHeader } from "@/components/site-header";
 interface Props {
   params: {
     id: string;
@@ -14,6 +14,7 @@ export default async function EditarProdutoPage({ params }: Props) {
   if (!product) {
     return (
       <div className="flex items-center justify-center min-h-96">
+        <SiteHeader />
         <div className="text-center">
           <h2 className="text-xl font-bold text-red-600 mb-2">
             Produto não encontrado

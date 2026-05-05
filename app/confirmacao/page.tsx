@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Confirmacao() {
@@ -20,6 +19,19 @@ export default function Confirmacao() {
   }, [checkoutData, lastOrder, router]);
 
   if (!lastOrder) return null;
+
+  // 🔥 GERAR CÓDIGO DO PEDIDO
+  const orderCode = lastOrder.id?.slice(0, 5).toUpperCase() || "SEM-CODIGO";
+
+  // 🔥 MENSAGEM DO WHATSAPP
+  const message = `Olá! Segue o comprovante do Pix do pedido Nº ${orderCode}.`;
+
+  const encodedMessage = encodeURIComponent(message);
+
+  // ⚠️ COLOQUE SEU NÚMERO AQUI (55 + DDD + número)
+  const phone = "5583999883708";
+
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,12 +62,11 @@ export default function Confirmacao() {
 
             {/* 🔥 ID DO PEDIDO */}
             <p className="text-lg font-semibold text-primary mb-2">
-              Pedido Nº #{lastOrder.id?.slice(0, 8).toUpperCase()}
+              Pedido Nº #{orderCode}
             </p>
 
             <p className="text-muted-foreground">
-              Obrigado por escolher o Saboroso Pudim! Entraremos em contato pelo
-              WhatsApp.
+              Obrigado por escolher o Saboroso Pudim!
             </p>
           </div>
 
@@ -91,18 +102,17 @@ export default function Confirmacao() {
 
           {/* 🔥 WHATSAPP */}
           <div className="bg-blue-50 p-4 rounded mb-6">
-            <p>📱 Fique ligado no WhatsApp! Vamos te atualizar por lá.</p>
+            <p>
+              📱 Clique no botão abaixo e envie o comprovante do Pix junto com o
+              código do seu pedido para agilizar a confirmação.
+            </p>
           </div>
 
-          {/* 🔥 BOTÕES */}
+          {/* 🔥 BOTÃO WHATSAPP */}
           <div className="flex gap-4 justify-center">
-            <Link href="/">
-              <Button variant="outline">Voltar</Button>
-            </Link>
-
-            <Link href="/cestinha">
-              <Button>Novo Pedido</Button>
-            </Link>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <Button>Enviar comprovante</Button>
+            </a>
           </div>
         </div>
       </motion.div>

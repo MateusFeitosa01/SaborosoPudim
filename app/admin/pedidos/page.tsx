@@ -2,6 +2,7 @@
 
 import { OrdersByStatusTable } from "@/components/admin/OrdersByStatusTable";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
 import {
   getOrders,
   STATUS_FLOW,
@@ -48,12 +49,14 @@ export default function PedidosPage() {
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-96">
+        <SiteHeader />
         <p className="text-gray-600">Carregando pedidos...</p>
       </div>
     );
 
   return (
     <div className="w-full space-y-4 sm:space-y-6">
+      <SiteHeader />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Pedidos por Status</h1>
