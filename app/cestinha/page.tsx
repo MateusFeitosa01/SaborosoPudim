@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useCart } from "@/components/contexts/cartContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ export default function Cart() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container flex flex-col items-center justify-center py-20 text-center">
+          
           <ShoppingBag className="h-16 w-16 text-muted-foreground/40" />
           <h2 className="mt-4 font-display text-2xl font-bold text-foreground">
             Sua cestinha está vazia
@@ -45,9 +48,10 @@ export default function Cart() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-
+      
       {/* 🔥 container animado */}
       <motion.div layout className="container px-5 py-15 md:py-12 lg:px-115">
+        
         <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
           Sua Cestinha
         </h1>
@@ -116,7 +120,7 @@ export default function Cart() {
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
-
+                        
                     {/* PREÇO */}
                     <div className="flex items-center gap-3">
                       <span className="font-display font-bold text-foreground">
@@ -151,7 +155,7 @@ export default function Cart() {
               R$ {total.toFixed(2)}
             </span>
           </div>
-
+            
           {/* BOTÕES */}
           <div className="flex flex-col gap-3">
             <Button onClick={() => router.push("/checkout")} className="w-full">

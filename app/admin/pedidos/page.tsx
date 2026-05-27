@@ -2,7 +2,6 @@
 
 import { OrdersByStatusTable } from "@/components/admin/OrdersByStatusTable";
 import { Button } from "@/components/ui/button";
-import { SiteHeader } from "@/components/site-header";
 import {
   getOrders,
   STATUS_FLOW,
@@ -10,6 +9,7 @@ import {
 } from "@/lib/services/orders";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ShoppingCart } from "lucide-react";
 
 export default function PedidosPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -49,59 +49,69 @@ export default function PedidosPage() {
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-96">
-        <SiteHeader />
         <p className="text-gray-600">Carregando pedidos...</p>
       </div>
     );
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6">
-      <SiteHeader />
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Pedidos por Status</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Organize seus pedidos por etapa
-          </p>
+    <div className="space-y-8">
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <ShoppingCart className="text-amber-600" size={28} />
+          <h1 className="text-3xl font-bold text-gray-900">Pedidos</h1>
+        </div>
+        <p className="text-gray-600">
+          Gerencie todos os pedidos da sua loja
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="text-sm text-gray-600">
+          Total de pedidos: <strong>{orders.length}</strong>
         </div>
         <Link href="/admin/pedidos/todos">
-          <Button>Ver Todos</Button>
+          <Button className="bg-amber-600 hover:bg-amber-700">
+            Ver Todos os Pedidos
+          </Button>
         </Link>
       </div>
 
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="pendente"
-          title="Pedidos Pendentes"
-          onChangeStatus={changeStatus}
-        />
-      </div>
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="preparando"
-          title="Pedidos em Preparo"
-          onChangeStatus={changeStatus}
-        />
-      </div>
-
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="pronto"
-          title="Prontos para Entrega"
-          onChangeStatus={changeStatus}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <OrdersByStatusTable
+            orders={orders}
+            status="pendente"
+            title="Pedidos Pendentes"
+            onChangeStatus={changeStatus}
+          />
+        </div>
+        <div>
+          <OrdersByStatusTable
+            orders={orders}
+            status="preparando"
+            title="Pedidos em Preparo"
+            onChangeStatus={changeStatus}
+          />
+        </div>
       </div>
 
-      <div>
-        <OrdersByStatusTable
-          orders={orders}
-          status="entregue"
-          title="Pedidos Entregues"
-          onChangeStatus={changeStatus}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <OrdersByStatusTable
+            orders={orders}
+            status="pronto"
+            title="Prontos para Entrega"
+            onChangeStatus={changeStatus}
+          />
+        </div>
+        <div>
+          <OrdersByStatusTable
+            orders={orders}
+            status="entregue"
+            title="Pedidos Entregues"
+            onChangeStatus={changeStatus}
+          />
+        </div>
       </div>
     </div>
   );

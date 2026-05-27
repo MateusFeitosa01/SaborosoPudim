@@ -1,35 +1,44 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import Header from "@/components/Header";
 import { useCart } from "@/components/contexts/cartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createOrder, createOrderItems } from "@/lib/services/orders";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, MapPin, Phone } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+/* =========================
+   📌 MÁSCARA DE TELEFONE
+========================= */
+function formatPhone(value: string) {
+  const numbers = value.replace(/\D/g, "").slice(0, 11);
+
+  if (numbers.length <= 2) return numbers;
+
+  if (numbers.length <= 6) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  }
+
+  if (numbers.length <= 10) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  }
+
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+}
+
 export default function Checkout() {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(false);
 
-  const {
-    items,
-    total,
-    setCheckoutData,
-    checkoutData,
-    setLastOrder,
-    clearCart,
-  } = useCart();
+  const { items, total, setCheckoutData, checkoutData } = useCart();
 
   const router = useRouter();
-
-  const [step, setStep] = useState<"dados" | "pagamento">("dados");
 
   const [formData, setFormData] = useState({
     name: checkoutData?.name || "",
@@ -40,18 +49,15 @@ export default function Checkout() {
       : "",
     deliveryMethod: checkoutData?.deliveryMethod || "entrega",
     address: checkoutData?.address || "",
+    address_rua: checkoutData?.address_rua || "",
+    address_bairro: checkoutData?.address_bairro || "",
+    address_numero: checkoutData?.address_numero || "",
+    address_complemento: checkoutData?.address_complemento || "",
+    address_referencia: checkoutData?.address_referencia || "",
   });
 
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 3);
-
-  const pixCode =
-    "00020101021126580014br.gov.bcb.pix01362d2fc313-ecfc-4a9c-9848-12257ab40d125204000053039865802BR5920MATEUS M Y M FEITOSA6011JOAO PESSOA62070503***6304AB02";
-
-  function handleCopyPix() {
-    navigator.clipboard.writeText(pixCode);
-    alert("Código PIX copiado!");
-  }
 
   function handleContinue() {
     const newErrors = {
@@ -59,8 +65,12 @@ export default function Checkout() {
       email: !formData.email.trim(),
       whatsapp: !formData.whatsapp.trim(),
       deliveryDate: !formData.deliveryDate,
-      address:
-        formData.deliveryMethod === "entrega" && !formData.address.trim(),
+      address_rua:
+        formData.deliveryMethod === "entrega" && !formData.address_rua.trim(),
+      address_bairro:
+        formData.deliveryMethod === "entrega" && !formData.address_bairro.trim(),
+      address_numero:
+        formData.deliveryMethod === "entrega" && !formData.address_numero.trim(),
     };
 
     setErrors(newErrors);
@@ -70,279 +80,282 @@ export default function Checkout() {
     setCheckoutData({
       name: formData.name,
       email: formData.email,
-      whatsapp: formData.whatsapp,
+
+      // 🔥 SALVAR SÓ NÚMEROS NO BANCO (boa prática)
+      whatsapp: formData.whatsapp.replace(/\D/g, ""),
+
       deliveryDate: new Date(formData.deliveryDate),
       deliveryMethod: formData.deliveryMethod as "entrega" | "retirada",
       address:
-        formData.deliveryMethod === "entrega" ? formData.address : undefined,
+        formData.deliveryMethod === "entrega"
+          ? formData.address
+          : undefined,
+      address_rua:
+        formData.deliveryMethod === "entrega" ? formData.address_rua : undefined,
+      address_bairro:
+        formData.deliveryMethod === "entrega"
+          ? formData.address_bairro
+          : undefined,
+      address_numero:
+        formData.deliveryMethod === "entrega"
+          ? formData.address_numero
+          : undefined,
+      address_complemento:
+        formData.deliveryMethod === "entrega"
+          ? formData.address_complemento
+          : undefined,
+      address_referencia:
+        formData.deliveryMethod === "entrega"
+          ? formData.address_referencia
+          : undefined,
     });
 
-    setStep("pagamento");
-  }
-
-  async function handleFinishOrder() {
-    if (loading) return;
-
-    try {
-      setLoading(true);
-
-      const order = await createOrder({
-        name: formData.name,
-        email: formData.email,
-        whatsapp: formData.whatsapp,
-        delivery_method: formData.deliveryMethod,
-        delivery_date: formData.deliveryDate,
-        address:
-          formData.deliveryMethod === "entrega" ? formData.address : null,
-        total,
-        status: "pendente",
-      });
-
-      await createOrderItems(
-        order.id,
-        items.map((item: any) => ({
-          productId: item.productId,
-          size: item.size,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      );
-
-      setLastOrder({
-        id: order.id,
-        total,
-        items,
-      });
-
-      clearCart();
-
-      router.push("/confirmacao");
-    } catch (error) {
-      console.error("ERRO COMPLETO:");
-      console.dir(error);
-
-      alert(JSON.stringify(error, null, 2));
-    } finally {
-      setLoading(false);
-    }
+    router.push("/checkout/pagamento");
   }
 
   return (
     <div className="min-h-screen bg-background">
+      
       <Header />
 
       <div className="container px-5 py-15 md:py-12 lg:px-115">
-        <AnimatePresence mode="wait">
-          {step === "dados" && (
-            <motion.div
-              key="dados"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 30 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <h1 className="font-display text-2xl font-bold md:text-3xl">
-                Finalizar Pedido
-              </h1>
+        
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
+          <h1 className="font-display text-2xl font-bold md:text-3xl">
+            Finalizar Pedido
+          </h1>
 
-              <p className="text-sm text-muted-foreground">
-                Preencha seus dados para continuar
-              </p>
+          <p className="text-sm text-muted-foreground">
+            Preencha seus dados para continuar
+          </p>
 
-              <div className="bg-card p-6 rounded-xl border space-y-4">
-                <div>
-                  <Label>Nome</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    aria-invalid={errors.name}
-                  />
-                </div>
+          <div className="bg-card p-6 rounded-xl border space-y-4">
+            {/* NOME */}
+            <div>
+              <Label>Nome</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                aria-invalid={errors.name}
+              />
+            </div>
 
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    aria-invalid={errors.email}
-                  />
-                </div>
+            {/* EMAIL */}
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                aria-invalid={errors.email}
+              />
+            </div>
 
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Phone size={16} /> WhatsApp
-                  </Label>
-                  <Input
-                    value={formData.whatsapp}
-                    onChange={(e) =>
-                      setFormData({ ...formData, whatsapp: e.target.value })
-                    }
-                    aria-invalid={errors.whatsapp}
-                  />
-                </div>
+            {/* WHATSAPP COM MÁSCARA */}
+            <div>
+              <Label className="flex items-center gap-2">
+                <Phone size={16} /> WhatsApp
+              </Label>
 
-                <div>
-                  <Label className="flex items-center gap-2">
-                    <Calendar size={16} /> Data de Entrega
-                  </Label>
-                  <Input
-                    type="date"
-                    min={minDate.toISOString().split("T")[0]}
-                    value={formData.deliveryDate}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        deliveryDate: e.target.value,
-                      })
-                    }
-                    aria-invalid={errors.deliveryDate}
-                  />
-                </div>
+              <Input
+                value={formData.whatsapp}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    whatsapp: formatPhone(e.target.value),
+                  })
+                }
+                placeholder="(83) 99999-9999"
+                maxLength={15}
+                aria-invalid={errors.whatsapp}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label>Método de recebimento</Label>
+            {/* DATA */}
+            <div>
+              <Label className="flex items-center gap-2">
+                <Calendar size={16} /> Data de Entrega
+              </Label>
 
-                  <div className="flex gap-3">
-                    {(["retirada", "entrega"] as const).map((method) => (
-                      <label
-                        key={method}
-                        className={cn(
-                          "flex-1 cursor-pointer rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
-                          formData.deliveryMethod === method
-                            ? "border-primary bg-primary/10"
-                            : "border-border",
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          className="sr-only"
-                          checked={formData.deliveryMethod === method}
-                          onChange={() =>
-                            setFormData({
-                              ...formData,
-                              deliveryMethod: method,
-                            })
-                          }
-                        />
-                        {method === "retirada" ? "🏠 Retirada" : "🚗 Entrega"}
-                      </label>
-                    ))}
-                  </div>
-                </div>
+              <Input
+                type="date"
+                min={minDate.toISOString().split("T")[0]}
+                value={formData.deliveryDate}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    deliveryDate: e.target.value,
+                  })
+                }
+                aria-invalid={errors.deliveryDate}
+              />
+            </div>
 
-                <AnimatePresence>
-                  {formData.deliveryMethod === "entrega" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <Label className="flex items-center gap-2">
-                        <MapPin size={16} /> Endereço
-                      </Label>
+            {/* MÉTODO */}
+            <div className="space-y-2">
+              <Label>Método de recebimento</Label>
 
-                      <Textarea
-                        value={formData.address}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            address: e.target.value,
-                          })
-                        }
-                        aria-invalid={errors.address}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <Button onClick={handleContinue} className="w-full">
-                  Prosseguir para pagamento
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === "pagamento" && (
-            <motion.div
-              key="pagamento"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              className="space-y-6"
-            >
-              <h1 className="text-2xl font-bold">Pagamento</h1>
-
-              <div className="bg-card p-6 rounded-xl border">
-                <h2 className="font-semibold mb-4">Resumo do Pedido</h2>
-
-                {items.map((item, index) => (
-                  <div
-                    key={`${item.productId}-${item.size}-${index}`}
-                    className="flex justify-between mb-2 text-sm"
+              <div className="flex gap-3">
+                {(["retirada", "entrega"] as const).map((method) => (
+                  <label
+                    key={method}
+                    className={cn(
+                      "flex-1 cursor-pointer rounded-lg border-2 p-3 text-center text-sm font-medium transition-all",
+                      formData.deliveryMethod === method
+                        ? "border-primary bg-primary/10"
+                        : "border-border"
+                    )}
                   >
-                    <span>
-                      {item.productName} x {item.quantity}
-                    </span>
-                    <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      checked={formData.deliveryMethod === method}
+                      onChange={() =>
+                        setFormData({
+                          ...formData,
+                          deliveryMethod: method,
+                        })
+                      }
+                    />
+                    {method === "retirada" ? "🏠 Retirada" : "🚗 Entrega"}
+                  </label>
                 ))}
-
-                <div className="border-t mt-4 pt-4 flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>R$ {total.toFixed(2)}</span>
-                </div>
               </div>
+            </div>
 
-              {/* PIX ADICIONADO SEM ALTERAR LAYOUT */}
-              <div className="bg-card p-6 rounded-xl border text-center space-y-4">
-                <h2 className="font-semibold">Pagamento via PIX</h2>
+            {/* ENDEREÇO */}
+            <AnimatePresence>
+              {formData.deliveryMethod === "entrega" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden space-y-4 border-t pt-4"
+                >
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <MapPin size={16} /> Detalhes da Entrega
+                  </h3>
 
-                <Image
-                  src="/pix.png"
-                  alt="QR Code PIX"
-                  width={200}
-                  height={200}
-                  className="mx-auto"
-                />
+                  {/* RUA - CAMPO OBRIGATÓRIO */}
+                  <div>
+                    <Label>Rua *</Label>
+                    <Input
+                      value={formData.address_rua}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address_rua: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Rua das Flores"
+                      aria-invalid={errors.address_rua}
+                    />
+                    {errors.address_rua && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Rua é obrigatória
+                      </p>
+                    )}
+                  </div>
 
-                <p className="text-sm text-muted-foreground">
-                  Escaneie ou copie o código abaixo:
-                </p>
+                  {/* BAIRRO - CAMPO OBRIGATÓRIO */}
+                  <div>
+                    <Label>Bairro *</Label>
+                    <Input
+                      value={formData.address_bairro}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address_bairro: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Centro"
+                      aria-invalid={errors.address_bairro}
+                    />
+                    {errors.address_bairro && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Bairro é obrigatório
+                      </p>
+                    )}
+                  </div>
 
-                <div className="bg-muted p-3 rounded text-xs break-all">
-                  {pixCode}
-                </div>
+                  {/* NÚMERO - CAMPO OBRIGATÓRIO */}
+                  <div>
+                    <Label>Número *</Label>
+                    <Input
+                      value={formData.address_numero}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address_numero: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: 123"
+                      aria-invalid={errors.address_numero}
+                    />
+                    {errors.address_numero && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Número é obrigatório
+                      </p>
+                    )}
+                  </div>
 
-                <Button onClick={handleCopyPix} className="w-full">
-                  Copiar código PIX
-                </Button>
-              </div>
+                  {/* COMPLEMENTO - OPCIONAL */}
+                  <div>
+                    <Label>Complemento (Opcional)</Label>
+                    <Input
+                      value={formData.address_complemento}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address_complemento: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Apto 42, Bloco B"
+                    />
+                  </div>
 
-              <Button
-                onClick={handleFinishOrder}
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? "Finalizando..." : "Finalizar Pedido"}
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setStep("dados")}
-                className="w-full"
-              >
-                Voltar
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  {/* PONTO DE REFERÊNCIA - OPCIONAL */}
+                  <div>
+                    <Label>Ponto de Referência (Opcional)</Label>
+                    <Textarea
+                      value={formData.address_referencia}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address_referencia: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Próximo ao supermercado..."
+                      rows={3}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+<div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-xl text-sm space-y-1">
+          <p className="font-semibold">⏳ Atenção</p>
+          <p>
+            Trabalhamos com pedidos sob encomenda e precisamos de no mínimo <strong>48 horas de antecedência</strong> para produção.
+          </p>
+          <p>
+            Isso garante mais qualidade, organização e uma melhor experiência para você.
+          </p>
+        </div>
+            {/* BOTÃO */}
+            <Button onClick={handleContinue} className="w-full">
+              Prosseguir para pagamento
+            </Button>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

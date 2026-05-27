@@ -52,12 +52,7 @@ export function ProductTable() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold">Produtos</h2>
-        <Link href="/admin/produtos/novo">
-          <Button className="w-full sm:w-auto">Novo Produto</Button>
-        </Link>
-      </div>
+      
 
       {/* Versão desktop - tabela */}
       <div className="hidden md:block overflow-x-auto">

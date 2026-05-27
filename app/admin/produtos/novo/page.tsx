@@ -1,16 +1,22 @@
 import { ProductForm } from "@/components/admin/ProductForm";
-import { SiteHeader } from "@/components/site-header";
+
 export default function NovoProdutoPage() {
   return (
-    <div className="w-full max-w-2xl">
-      <SiteHeader />
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Novo Produto</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Crie um novo produto para sua loja
-        </p>
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-3xl">
+        
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            Novo Produto
+          </h1>
+        </div>
+
+        <div className="w-full flex justify-center">
+          
+            <ProductForm />
+          
+        </div>
       </div>
-      <ProductForm />
     </div>
   );
 }

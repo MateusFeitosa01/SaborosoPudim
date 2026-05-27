@@ -20,6 +20,11 @@ interface CreateOrderInput {
   delivery_date: string;
   delivery_method: "entrega" | "retirada";
   address?: string | null;
+  address_rua?: string | null;
+  address_bairro?: string | null;
+  address_numero?: string | null;
+  address_complemento?: string | null;
+  address_referencia?: string | null;
   total: number;
   status?: OrderStatus;
 }
@@ -81,6 +86,11 @@ export async function getOrders() {
       delivery_date,
       delivery_method,
       address,
+      address_rua,
+      address_bairro,
+      address_numero,
+      address_complemento,
+      address_referencia,
       total,
       status,
       created_at,

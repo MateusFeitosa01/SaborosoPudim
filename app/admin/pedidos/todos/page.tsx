@@ -55,7 +55,7 @@ export default function TodosPedidosPage() {
 
   return (
     <div className="w-full space-y-4">
-      <SiteHeader />
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Todos os Pedidos</h1>
