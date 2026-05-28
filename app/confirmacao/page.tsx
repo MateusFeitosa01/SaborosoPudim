@@ -60,7 +60,7 @@ export default function Confirmacao() {
               <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-4" />
             </motion.div>
 
-            <h1 className="text-4xl font-bold mb-4">Pedido Confirmado!</h1>
+            <h1 className="text-4xl font-bold mb-4">Pedido Feito Com Sucesso!</h1>
 
             {/* 🔥 ID DO PEDIDO */}
             <p className="text-lg font-semibold text-primary mb-2">
