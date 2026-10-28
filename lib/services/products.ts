@@ -1,97 +1,41 @@
-import { supabase } from "@/lib/supabase";
+﻿import { apiFetch, mediaUrl, unwrapList } from "@/lib/api";
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  sizes: {
-    label: string;
-    price: number;
-  }[];
-}
+export interface ProductSize { id?: string | number; label: string; price: number; is_active?: boolean }
+export interface Product { id: string; name: string; description: string; image: string; is_active?: boolean; is_weekly?: boolean; is_best_seller?: boolean; weekly_order_count?: number; sizes: ProductSize[] }
 
-export async function getProducts() {
-  const { data, error } = await supabase
-    .from("products")
-    .select(`
-      id,
-      name,
-      description,
-      image,
-      sizes(
-        label,
-        price
-      )
-    `);
-
-  if (error) throw error;
-
-  return data as Product[];
-}
-
-export async function createProduct(product: Omit<Product, 'id'>) {
-  const { data: productData, error: productError } = await supabase
-    .from("products")
-    .insert({
-      name: product.name,
-      description: product.description,
-      image: product.image,
-    })
-    .select()
-    .single();
-
-  if (productError) throw productError;
-
-  const sizesPayload = product.sizes.map(size => ({
-    product_id: productData.id,
-    label: size.label,
-    price: size.price,
+export async function getProducts(): Promise<Product[]> {
+  const data = await apiFetch("/products/products/");
+  return unwrapList<any>(data).map((product) => ({
+    ...product,
+    id: String(product.id),
+    image: mediaUrl(product.image),
+    sizes: (product.sizes || []).filter((size: any) => size.is_active !== false).map((size: any) => ({ ...size, id: String(size.id), price: Number(size.price) })),
   }));
-
-  const { error: sizesError } = await supabase
-    .from("sizes")
-    .insert(sizesPayload);
-
-  if (sizesError) throw sizesError;
-
-  return productData;
 }
 
-export async function updateProduct(id: string, product: Omit<Product, 'id'>) {
-  const { error: productError } = await supabase
-    .from("products")
-    .update({
-      name: product.name,
-      description: product.description,
-      image: product.image,
-    })
-    .eq('id', id);
-
-  if (productError) throw productError;
-
-  // Delete existing sizes
-  await supabase.from("sizes").delete().eq('product_id', id);
-
-  // Insert new sizes
-  const sizesPayload = product.sizes.map(size => ({
-    product_id: id,
-    label: size.label,
-    price: size.price,
-  }));
-
-  const { error: sizesError } = await supabase
-    .from("sizes")
-    .insert(sizesPayload);
-
-  if (sizesError) throw sizesError;
+export interface ProductPayload {
+  name: string; description: string; image?: string; imageFile?: File | null; is_active?: boolean; is_weekly?: boolean;
+  sizes: { id?: string | number; label: string; price: number; is_active?: boolean }[];
 }
 
-export async function deleteProduct(id: string) {
-  const { error } = await supabase
-    .from("products")
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
+export async function createProduct(product: ProductPayload) {
+  const formData = new FormData();
+  formData.append("name", product.name); formData.append("description", product.description);
+  formData.append("is_active", String(product.is_active ?? true));
+  formData.append("is_weekly", String(product.is_weekly ?? false));
+  if (product.imageFile) formData.append("image", product.imageFile);
+  formData.append("sizes", JSON.stringify(product.sizes.map(({ label, price, is_active }) => ({ label, price, is_active: is_active ?? true }))));
+  return apiFetch("/products/products/", { method: "POST", body: formData }, true);
 }
+
+export async function updateProduct(id: string, product: ProductPayload) {
+  const formData = new FormData();
+  formData.append("name", product.name); formData.append("description", product.description);
+  formData.append("is_active", String(product.is_active ?? true));
+  formData.append("is_weekly", String(product.is_weekly ?? false));
+  if (product.imageFile) formData.append("image", product.imageFile);
+  formData.append("sizes", JSON.stringify(product.sizes.map(({ id, label, price, is_active }) => ({ ...(id ? { id } : {}), label, price, is_active: is_active ?? true }))));
+  return apiFetch(`/products/products/${id}/`, { method: "PATCH", body: formData }, true);
+}
+
+export async function deleteProduct(id: string) { return apiFetch(`/products/products/${id}/`, { method: "DELETE" }, true); }

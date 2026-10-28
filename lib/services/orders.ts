@@ -1,124 +1,20 @@
-import { supabase } from "@/lib/supabase";
-
-/* ================= STATUS PADRÃO ================= */
-
-export const STATUS_FLOW = [
-  "pendente",
-  "preparando",
-  "pronto",
-  "entregue",
-] as const;
-
-export type OrderStatus = (typeof STATUS_FLOW)[number];
-
-/* ================= TYPES ================= */
+import { apiFetch } from "@/lib/api";
 
 interface CreateOrderInput {
-  name: string;
-  email: string;
-  whatsapp: string;
-  delivery_date: string;
-  delivery_method: "entrega" | "retirada";
-  address?: string | null;
-  address_rua?: string | null;
-  address_bairro?: string | null;
-  address_numero?: string | null;
-  address_complemento?: string | null;
-  address_referencia?: string | null;
-  total: number;
-  status?: OrderStatus;
+  name: string; email: string; whatsapp: string; delivery_date: string;
+  delivery_method: "entrega" | "retirada"; address_rua?: string | null;
+  address_bairro?: string | null; address_numero?: string | null;
+  address_complemento?: string | null; address_referencia?: string | null;
 }
 
-/* ================= CREATE ORDER ================= */
-
-export async function createOrder(
-  orderData: CreateOrderInput,
-): Promise<{ id: string }> {
-  const { data, error } = await supabase
-    .from("orders")
-    .insert({
-      ...orderData,
-      status: orderData.status ?? "pendente",
-    })
-    .select("id")
-    .single();
-
-  if (error) throw error;
-
-  return data;
-}
-
-/* ================= CREATE ORDER ITEMS ================= */
-
-export async function createOrderItems(
-  orderId: string,
-  items: {
-    productId: string;
-    size: string;
-    quantity: number;
-    price: number;
-  }[],
-) {
-  const payload = items.map((item) => ({
-    order_id: orderId,
-    product_id: item.productId,
-    size: item.size,
-    quantity: item.quantity,
-    price: item.price,
-  }));
-
-  const { error } = await supabase.from("order_items").insert(payload);
-
-  if (error) throw error;
-}
-
-/* ================= GET ORDERS ================= */
-
-export async function getOrders() {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(
-      `
-      id,
-      name,
-      email,
-      whatsapp,
-      delivery_date,
-      delivery_method,
-      address,
-      address_rua,
-      address_bairro,
-      address_numero,
-      address_complemento,
-      address_referencia,
-      total,
-      status,
-      created_at,
-      order_items(
-        quantity,
-        price,
-        size,
-        products(name)
-      )
-    `,
-    )
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
-
-  return data ?? [];
-}
-
-/* ================= UPDATE STATUS ================= */
-
-export async function updateOrderStatus(
-  orderId: string,
-  newStatus: OrderStatus,
-) {
-  const { error } = await supabase
-    .from("orders")
-    .update({ status: newStatus })
-    .eq("id", orderId);
-
-  if (error) throw error;
+export async function createOrder(orderData: CreateOrderInput, items: { productId: string | number; sizeId: string | number; quantity: number }[]): Promise<{ id: string }> {
+  const data = await apiFetch("/orders/orders/", { method: "POST", body: JSON.stringify({
+    customer_name: orderData.name, customer_email: orderData.email, customer_whatsapp: orderData.whatsapp,
+    delivery_date: orderData.delivery_date, delivery_method: orderData.delivery_method,
+    address_rua: orderData.address_rua || null, address_bairro: orderData.address_bairro || null,
+    address_numero: orderData.address_numero || null, address_complemento: orderData.address_complemento || null,
+    address_referencia: orderData.address_referencia || null,
+    items: items.map((item) => ({ product_id: Number(item.productId), size_id: Number(item.sizeId), quantity: item.quantity })),
+  }) });
+  return { ...data, id: String(data.id) };
 }

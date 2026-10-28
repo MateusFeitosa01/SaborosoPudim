@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { useCart } from "./contexts/cartContext";
 import { motion } from "framer-motion";
 
 interface ProductSize {
+  id?: string | number;
   label: string;
   price: number;
 }
@@ -16,10 +16,21 @@ export interface Product {
   name: string;
   description: string;
   image: string;
+  is_weekly?: boolean;
+  is_best_seller?: boolean;
+  weekly_order_count?: number;
   sizes: ProductSize[];
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({
+  product,
+  featured = false,
+  badge,
+}: {
+  product: Product;
+  featured?: boolean;
+  badge?: string;
+}) {
   const [selectedSize, setSelectedSize] = useState(0);
   const [added, setAdded] = useState(false);
 
@@ -34,6 +45,7 @@ export default function ProductCard({ product }: { product: Product }) {
       productId: product.id,
       productName: product.name,
       size: selected.label,
+      sizeId: selected.id,
       price: selected.price,
       image: product.image,
     });
@@ -51,16 +63,21 @@ export default function ProductCard({ product }: { product: Product }) {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.4 }}
-      className="group overflow-hidden rounded-2xl bg-card shadow-md border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className={`group relative overflow-hidden rounded-3xl bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${featured ? "border-2 border-primary ring-4 ring-primary/10" : "border border-border"}`}
     >
-      <div className="aspect-square overflow-hidden">
-        <Image
-          src={product.image}
-          alt={product.name}
-          width={640}
-          height={640}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      <div className="aspect-square overflow-hidden bg-[#FFF5E6]">
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+            Sem imagem
+          </div>
+        )}
       </div>
 
       <div className="p-4 md:p-5">

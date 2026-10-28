@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import Header from "@/components/Header";
 import { useCart } from "@/components/contexts/cartContext";
 import { Button } from "@/components/ui/button";
-import { createOrder, createOrderItems } from "@/lib/services/orders";
+import { createOrder } from "@/lib/services/orders";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -27,7 +27,7 @@ export default function Pagamento() {
   async function handleFinishOrder() {
     if (loading) return;
 
-    // 🔴 VALIDAÇÃO ANTES DE ENVIAR (evita erro no Supabase)
+    // Valida os dados antes de enviar o pedido ao Django.
     if (!checkoutData?.deliveryDate) {
       alert("Data de entrega não encontrada. Volte e selecione uma data.");
       return;
@@ -41,52 +41,19 @@ export default function Pagamento() {
         email: checkoutData?.email || "",
         whatsapp: checkoutData?.whatsapp || "",
         delivery_method: checkoutData?.deliveryMethod || "entrega",
-
-        // ✅ CORREÇÃO DO ERRO 22007 (nunca enviar "")
         delivery_date: checkoutData.deliveryDate
           ? checkoutData.deliveryDate.toISOString().split("T")[0]
-          : null,
-
-        address:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address
-            : null,
-
-        // 🆕 NOVOS CAMPOS DE ENDEREÇO
-        address_rua:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address_rua
-            : null,
-        address_bairro:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address_bairro
-            : null,
-        address_numero:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address_numero
-            : null,
-        address_complemento:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address_complemento
-            : null,
-        address_referencia:
-          checkoutData?.deliveryMethod === "entrega"
-            ? checkoutData?.address_referencia
-            : null,
-
-        total,
-        status: "pendente",
-      });
-
-      await createOrderItems(
-        order.id,
-        items.map((item: any) => ({
-          productId: item.productId,
-          size: item.size,
-          quantity: item.quantity,
-          price: item.price,
-        }))
-      );
+          : "",
+        address_rua: checkoutData?.deliveryMethod === "entrega" ? checkoutData?.address_rua : null,
+        address_bairro: checkoutData?.deliveryMethod === "entrega" ? checkoutData?.address_bairro : null,
+        address_numero: checkoutData?.deliveryMethod === "entrega" ? checkoutData?.address_numero : null,
+        address_complemento: checkoutData?.deliveryMethod === "entrega" ? checkoutData?.address_complemento : null,
+        address_referencia: checkoutData?.deliveryMethod === "entrega" ? checkoutData?.address_referencia : null,
+      }, items.map((item: any) => ({
+        productId: item.productId,
+        sizeId: item.sizeId,
+        quantity: item.quantity,
+      })));
 
       setLastOrder({
         id: order.id,
